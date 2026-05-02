@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Clothub.API/Clothub.API.csproj" />
+    <Project Path="src/Clothub.Application/Clothub.Application.csproj" />
+    <Project Path="src/Clothub.Domain/Clothub.Domain.csproj" />
+    <Project Path="src/Clothub.Persistence/Clothub.Persistence.csproj" />
+  </Folder>
+</Solution>

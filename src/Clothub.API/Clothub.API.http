@@ -1,0 +1,6 @@
+@Clothub.API_HostAddress = http://localhost:5147
+
+GET {{Clothub.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

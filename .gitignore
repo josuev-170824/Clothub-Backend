@@ -1,0 +1,28 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userosscache
+*.sln.docstates
+
+## User secrets
+secrets.json
+
+## Publish
+publish/
+**/Properties/PublishProfiles/
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+## Logs
+*.log
+logs/
+
+## OS
+.DS_Store
+Thumbs.db
