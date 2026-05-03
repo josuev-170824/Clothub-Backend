@@ -5,6 +5,7 @@ using Clothub.Application.Auth.Interfaces;
 using Clothub.Persistence.Repositories;
 using MediatR;  
 using Clothub.API.Auth;
+using Clothub.Application.Auth.Commands.LoginWithEmail;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,13 @@ app.MapPost("/auth/register", async (RegisterRequest request, IMediator mediator
     var command = new RegisterWithEmailCommand(request.Nombre, request.Apellidos, request.Email, request.Password);
     var result = await mediator.Send(command);
     return Results.Created($"/usuarios/{result}", new {id=result});
+});
+
+app.MapPost("/auth/login", async (LoginRequest request, IMediator mediator) =>
+{
+    var command = new LoginWithEmailCommand(request.Email, request.Password);
+    var result = await mediator.Send(command);
+    return Results.Ok(new {token = result});
 });
 
 app.Run();
