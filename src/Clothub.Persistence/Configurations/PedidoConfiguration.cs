@@ -32,16 +32,6 @@ public class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
             .HasPrecision(10, 2)
             .IsRequired();
 
-        builder.Property(p => p.MontoVendedor)
-            .HasColumnName("monto_vendedor")
-            .HasPrecision(10, 2)
-            .IsRequired();
-
-        builder.Property(p => p.Comision)
-            .HasColumnName("comision")
-            .HasPrecision(10, 2)
-            .IsRequired();
-
         builder.Property(p => p.TipoEnvio)
             .HasColumnName("tipo_envio")
             .HasConversion<string>()
@@ -91,10 +81,6 @@ public class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
 
         builder.Property(p => p.CodigoRastreo)
             .HasColumnName("codigo_rastreo")
-            .HasMaxLength(100);
-
-        builder.Property(p => p.StripePaymentIntentId)
-            .HasColumnName("stripe_payment_intent_id")
             .HasMaxLength(100);
 
         builder.Property(p => p.FechaCreacion)

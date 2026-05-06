@@ -3,7 +3,7 @@ namespace Clothub.Domain.Enums;
 public enum EstadoPedido
 {
     Pendiente,
-    Pagado,
+    Confirmado,
     Enviado,
     Entregado
 }

@@ -17,6 +17,7 @@ public class ClothubDbContext(DbContextOptions<ClothubDbContext> options) : DbCo
     public DbSet<Resena> Resenas => Set<Resena>();
     public DbSet<Seguimiento> Seguimientos => Set<Seguimiento>();
     public DbSet<Reporte> Reportes => Set<Reporte>();
+    public DbSet<Suscripcion> Suscripciones => Set<Suscripcion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

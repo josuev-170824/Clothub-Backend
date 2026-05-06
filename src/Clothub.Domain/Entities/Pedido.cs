@@ -11,8 +11,6 @@ public class Pedido
     public Guid TiendaId { get; private set; }
     public Guid PrendaId { get; private set; }
     public decimal MontoTotal { get; private set; }
-    public decimal MontoVendedor { get; private set; }
-    public decimal Comision { get; private set; }
     public TipoEnvio TipoEnvio { get; private set; }
     public decimal CostoEnvio { get; private set; }
     public string Provincia { get; private set; } = string.Empty;
@@ -23,7 +21,6 @@ public class Pedido
     public string TelefonoDestinatario { get; private set; } = string.Empty;
     public EstadoPedido Estado { get; private set; }
     public string? CodigoRastreo { get; private set; }
-    public string? StripePaymentIntentId { get; private set; }
     public DateTime FechaCreacion { get; private set; }
 
     public Usuario Comprador { get; private set; } = null!;
@@ -32,13 +29,10 @@ public class Pedido
     public Resena? Resena { get; private set; }
 
     public static Pedido Crear(Guid compradorId, Guid tiendaId, Guid prendaId,
-        decimal precioBase, decimal costoEnvio, decimal porcentajeComision,
+        decimal precioBase, decimal costoEnvio,
         TipoEnvio tipoEnvio, string provincia, string canton, string distrito,
         string direccionExacta, string nombreDestinatario, string telefonoDestinatario)
     {
-        var comision = precioBase * porcentajeComision;
-        var montoVendedor = precioBase - comision;
-
         return new Pedido
         {
             Id = Guid.NewGuid(),
@@ -46,8 +40,6 @@ public class Pedido
             TiendaId = tiendaId,
             PrendaId = prendaId,
             MontoTotal = precioBase + costoEnvio,
-            MontoVendedor = montoVendedor,
-            Comision = comision,
             CostoEnvio = costoEnvio,
             TipoEnvio = tipoEnvio,
             Provincia = provincia,
@@ -61,10 +53,7 @@ public class Pedido
         };
     }
 
-    public void AsignarStripePaymentIntent(string paymentIntentId) =>
-        StripePaymentIntentId = paymentIntentId;
-
-    public void MarcarComoPagado() => Estado = EstadoPedido.Pagado;
+    public void Confirmar() => Estado = EstadoPedido.Confirmado;
 
     public void MarcarComoEnviado(string codigoRastreo)
     {

@@ -69,21 +69,11 @@ public class TiendaConfiguration : IEntityTypeConfiguration<Tienda>
         builder.Property(t => t.TiempoLimiteApartadoHoras)
             .HasColumnName("tiempo_limite_apartado_horas");
 
-        builder.Property(t => t.Plan)
-            .HasColumnName("plan")
-            .HasConversion<string>()
-            .HasMaxLength(20)
-            .IsRequired();
-
         builder.Property(t => t.Estado)
             .HasColumnName("estado")
             .HasConversion<string>()
             .HasMaxLength(20)
             .IsRequired();
-
-        builder.Property(t => t.StripeAccountId)
-            .HasColumnName("stripe_account_id")
-            .HasMaxLength(100);
 
         builder.Property(t => t.FechaCreacion)
             .HasColumnName("fecha_creacion")

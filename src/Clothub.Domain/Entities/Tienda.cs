@@ -20,12 +20,11 @@ public class Tienda
     public bool AceptaApartados { get; private set; }
     public decimal? PorcentajeApartado { get; private set; }
     public int? TiempoLimiteApartadoHoras { get; private set; }
-    public PlanTienda Plan { get; private set; }
     public EstadoTienda Estado { get; private set; }
-    public string? StripeAccountId { get; private set; }
     public DateTime FechaCreacion { get; private set; }
 
     public Usuario Usuario { get; private set; } = null!;
+    public Suscripcion? Suscripcion { get; private set; }
     public ICollection<Prenda> Prendas { get; private set; } = [];
     public ICollection<Pedido> Pedidos { get; private set; } = [];
     public ICollection<Resena> Resenas { get; private set; } = [];
@@ -43,7 +42,6 @@ public class Tienda
             Telefono = telefono,
             TelefonoVerificado = false,
             AceptaApartados = false,
-            Plan = PlanTienda.Gratuito,
             Estado = EstadoTienda.Inactiva,
             FechaCreacion = DateTime.UtcNow
         };
@@ -75,19 +73,10 @@ public class Tienda
 
     public void AsignarLogo(string logoUrl) => LogoUrl = logoUrl;
 
-    public void AsignarStripeAccount(string stripeAccountId) => StripeAccountId = stripeAccountId;
-
-    public void ActualizarPlan(PlanTienda plan) => Plan = plan;
-
     public void Suspender() => Estado = EstadoTienda.Suspendida;
 
     public void Habilitar() => Estado = EstadoTienda.Activa;
 
-    public bool PuedePublicarMasPrendas(int prendasActuales)
-    {
-        if (Plan == PlanTienda.Premium) return true;
-        return prendasActuales < 20;
-    }
-
-    public decimal ObtenerPorcentajeComision() => Plan == PlanTienda.Premium ? 0.10m : 0.20m;
+    public bool PuedePublicarMasPrendas() =>
+        Suscripcion is not null && Suscripcion.EstaActiva();
 }

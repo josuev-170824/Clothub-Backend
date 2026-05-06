@@ -13,7 +13,6 @@ public class Apartado
     public decimal MontoRestante { get; private set; }
     public DateTime FechaLimite { get; private set; }
     public EstadoApartado Estado { get; private set; }
-    public string? StripePaymentIntentId { get; private set; }
     public DateTime FechaCreacion { get; private set; }
 
     public Usuario Comprador { get; private set; } = null!;
@@ -36,9 +35,6 @@ public class Apartado
             FechaCreacion = DateTime.UtcNow
         };
     }
-
-    public void AsignarStripePaymentIntent(string paymentIntentId) =>
-        StripePaymentIntentId = paymentIntentId;
 
     public void Completar() => Estado = EstadoApartado.Completado;
 

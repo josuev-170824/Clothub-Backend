@@ -43,10 +43,6 @@ public class ApartadoConfiguration : IEntityTypeConfiguration<Apartado>
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(a => a.StripePaymentIntentId)
-            .HasColumnName("stripe_payment_intent_id")
-            .HasMaxLength(100);
-
         builder.Property(a => a.FechaCreacion)
             .HasColumnName("fecha_creacion")
             .IsRequired();
