@@ -66,10 +66,10 @@ builder.Services.AddAuthentication(options =>
         var apellidos = principal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty;
 
         var token = await mediator.Send(new GoogleAuthCommand(googleId, email, nombre, apellidos));
+        var frontendUrl = ctx.HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Frontend:Url"]!;
 
         ctx.HandleResponse();
-        ctx.Response.ContentType = "application/json";
-        await ctx.Response.WriteAsync(JsonSerializer.Serialize(new { token }));
+        ctx.Response.Redirect($"{frontendUrl}/auth/callback?token={token}");
     };
 });
 
