@@ -18,6 +18,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+            ?? ["http://localhost:5173"];
+        policy.WithOrigins(origins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddDbContext<ClothubDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -70,20 +82,35 @@ if (app.Environment.IsDevelopment())
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
+app.UseCors();
 app.UseAuthentication();
 
 app.MapPost("/auth/register", async (RegisterRequest request, IMediator mediator) =>
 {
-    var command = new RegisterWithEmailCommand(request.Nombre, request.Apellidos, request.Email, request.Password);
-    var result = await mediator.Send(command);
-    return Results.Created($"/usuarios/{result}", new { id = result });
+    try
+    {
+        var command = new RegisterWithEmailCommand(request.Nombre, request.Apellidos, request.Email, request.Password);
+        var result = await mediator.Send(command);
+        return Results.Created($"/usuarios/{result}", new { id = result });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
 });
 
 app.MapPost("/auth/login", async (LoginRequest request, IMediator mediator) =>
 {
-    var command = new LoginWithEmailCommand(request.Email, request.Password);
-    var result = await mediator.Send(command);
-    return Results.Ok(new { token = result });
+    try
+    {
+        var command = new LoginWithEmailCommand(request.Email, request.Password);
+        var result = await mediator.Send(command);
+        return Results.Ok(new { token = result });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
 });
 
 app.MapGet("/auth/google", () =>
