@@ -25,11 +25,18 @@ public class VerificarEmailCommandHandler : IRequestHandler<VerificarEmailComman
         if (usuario.EmailVerificado)
             throw new InvalidOperationException("El email ya fue verificado.");
 
+        if (usuario.IntentosFallidosVerificacion >= 5)
+            throw new InvalidOperationException("Demasiados intentos fallidos. Solicitá un nuevo código.");
+
         if (usuario.FechaExpiracionTokenVerificacion is null || usuario.FechaExpiracionTokenVerificacion < DateTime.UtcNow)
             throw new InvalidOperationException("El código ha expirado. Solicitá uno nuevo.");
 
         if (usuario.TokenVerificacionEmail != request.Codigo)
+        {
+            usuario.IncrementarIntentosFallidos();
+            await _usuarioRepository.ActualizarAsync(cancellationToken);
             throw new InvalidOperationException("El código es incorrecto.");
+        }
 
         usuario.VerificarEmail();
         await _usuarioRepository.ActualizarAsync(cancellationToken);

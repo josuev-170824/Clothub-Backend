@@ -14,6 +14,7 @@ public class Usuario
     public bool EmailVerificado { get; private set; }
     public string? TokenVerificacionEmail { get; private set; }
     public DateTime? FechaExpiracionTokenVerificacion { get; private set; }
+    public int IntentosFallidosVerificacion { get; private set; }
     public ProveedorAuth ProveedorAuth { get; private set; }
     public string? GoogleId { get; private set; }
     public Rol Rol { get; private set; }
@@ -65,13 +66,17 @@ public class Usuario
         EmailVerificado = true;
         TokenVerificacionEmail = null;
         FechaExpiracionTokenVerificacion = null;
+        IntentosFallidosVerificacion = 0;
     }
 
     public void RegenerarCodigoVerificacion()
     {
         TokenVerificacionEmail = GenerarCodigo();
         FechaExpiracionTokenVerificacion = DateTime.UtcNow.AddMinutes(15);
+        IntentosFallidosVerificacion = 0;
     }
+
+    public void IncrementarIntentosFallidos() => IntentosFallidosVerificacion++;
 
     public void AsignarRolVendedor() => Rol = Rol.Vendedor;
 

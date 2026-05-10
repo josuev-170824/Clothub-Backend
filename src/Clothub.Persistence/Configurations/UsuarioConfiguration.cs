@@ -49,6 +49,11 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.FechaExpiracionTokenVerificacion)
             .HasColumnName("fecha_expiracion_token_verificacion");
 
+        builder.Property(u => u.IntentosFallidosVerificacion)
+            .HasColumnName("intentos_fallidos_verificacion")
+            .HasDefaultValue(0)
+            .IsRequired();
+
         builder.Property(u => u.ProveedorAuth)
             .HasColumnName("proveedor_auth")
             .HasConversion<string>()
