@@ -6,6 +6,8 @@ using Clothub.Application.Auth.Commands.GoogleAuth;
 using Clothub.Application.Auth.Commands.LoginWithEmail;
 using Clothub.Application.Auth.Commands.RegisterWithEmail;
 using Clothub.Application.Auth.Commands.ReenviarCodigoVerificacion;
+using Clothub.Application.Auth.Commands.RestablecerPassword;
+using Clothub.Application.Auth.Commands.SolicitarRecuperacionPassword;
 using Clothub.Application.Auth.Commands.VerificarEmail;
 using Clothub.Application.Auth.Interfaces;
 using Clothub.Application.Auth.Services;
@@ -46,6 +48,16 @@ builder.Services.AddRateLimiter(options =>
             {
                 PermitLimit = 10,
                 Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+    options.AddPolicy("recovery", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromHours(1),
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 0
             }));
@@ -191,5 +203,25 @@ app.MapPost("/auth/reenviar-codigo", async (ReenviarCodigoRequest request, IMedi
 app.MapGet("/auth/google", () =>
     Results.Challenge(new AuthenticationProperties(), [GoogleDefaults.AuthenticationScheme]))
     .RequireRateLimiting("auth");
+
+app.MapPost("/auth/solicitar-recuperacion", async (SolicitarRecuperacionRequest request, IMediator mediator, IConfiguration config) =>
+{
+    var frontendUrl = config["Frontend:Url"]!;
+    await mediator.Send(new SolicitarRecuperacionPasswordCommand(request.Email, frontendUrl));
+    return Results.Ok(new { message = "Si el email existe, recibirás instrucciones en tu correo." });
+}).RequireRateLimiting("recovery");
+
+app.MapPost("/auth/restablecer-password", async (RestablecerPasswordRequest request, IMediator mediator) =>
+{
+    try
+    {
+        await mediator.Send(new RestablecerPasswordCommand(request.Token, request.NuevaPassword));
+        return Results.Ok(new { message = "Contraseña actualizada correctamente." });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
+}).RequireRateLimiting("auth");
 
 app.Run();

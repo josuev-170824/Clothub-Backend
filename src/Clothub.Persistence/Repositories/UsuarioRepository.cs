@@ -21,6 +21,12 @@ using Microsoft.EntityFrameworkCore;
         return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant(), cancellationToken);
     }
 
+    public async Task<Usuario?> ObtenerPorTokenRecuperacionAsync(string token, CancellationToken cancellationToken)
+    {
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.TokenRecuperacionPassword == token, cancellationToken);
+    }
+
     public async Task ActualizarAsync(CancellationToken cancellationToken)
     {
         await _context.SaveChangesAsync(cancellationToken);

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Clothub.Domain.Enums;
 
 namespace Clothub.Domain.Entities;
@@ -15,6 +16,8 @@ public class Usuario
     public string? TokenVerificacionEmail { get; private set; }
     public DateTime? FechaExpiracionTokenVerificacion { get; private set; }
     public int IntentosFallidosVerificacion { get; private set; }
+    public string? TokenRecuperacionPassword { get; private set; }
+    public DateTime? FechaExpiracionTokenRecuperacion { get; private set; }
     public ProveedorAuth ProveedorAuth { get; private set; }
     public string? GoogleId { get; private set; }
     public Rol Rol { get; private set; }
@@ -77,6 +80,19 @@ public class Usuario
     }
 
     public void IncrementarIntentosFallidos() => IntentosFallidosVerificacion++;
+
+    public void GenerarTokenRecuperacion()
+    {
+        TokenRecuperacionPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        FechaExpiracionTokenRecuperacion = DateTime.UtcNow.AddMinutes(15);
+    }
+
+    public void RestablecerPassword(string nuevoHash)
+    {
+        PasswordHash = nuevoHash;
+        TokenRecuperacionPassword = null;
+        FechaExpiracionTokenRecuperacion = null;
+    }
 
     public void AsignarRolVendedor() => Rol = Rol.Vendedor;
 

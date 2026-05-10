@@ -54,6 +54,13 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
             .HasDefaultValue(0)
             .IsRequired();
 
+        builder.Property(u => u.TokenRecuperacionPassword)
+            .HasColumnName("token_recuperacion_password")
+            .HasMaxLength(64);
+
+        builder.Property(u => u.FechaExpiracionTokenRecuperacion)
+            .HasColumnName("fecha_expiracion_token_recuperacion");
+
         builder.Property(u => u.ProveedorAuth)
             .HasColumnName("proveedor_auth")
             .HasConversion<string>()
