@@ -46,6 +46,9 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
             .HasColumnName("token_verificacion_email")
             .HasMaxLength(100);
 
+        builder.Property(u => u.FechaExpiracionTokenVerificacion)
+            .HasColumnName("fecha_expiracion_token_verificacion");
+
         builder.Property(u => u.ProveedorAuth)
             .HasColumnName("proveedor_auth")
             .HasConversion<string>()

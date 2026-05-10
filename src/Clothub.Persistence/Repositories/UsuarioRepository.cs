@@ -20,4 +20,9 @@ using Microsoft.EntityFrameworkCore;
     {
         return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant(), cancellationToken);
     }
+
+    public async Task ActualizarAsync(CancellationToken cancellationToken)
+    {
+        await _context.SaveChangesAsync(cancellationToken);
+    }
   }

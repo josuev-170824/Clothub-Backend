@@ -13,6 +13,7 @@ public class Usuario
     public string? PasswordHash { get; private set; }
     public bool EmailVerificado { get; private set; }
     public string? TokenVerificacionEmail { get; private set; }
+    public DateTime? FechaExpiracionTokenVerificacion { get; private set; }
     public ProveedorAuth ProveedorAuth { get; private set; }
     public string? GoogleId { get; private set; }
     public Rol Rol { get; private set; }
@@ -35,7 +36,8 @@ public class Usuario
             Email = email.ToLowerInvariant(),
             PasswordHash = passwordHash,
             EmailVerificado = false,
-            TokenVerificacionEmail = Guid.NewGuid().ToString("N"),
+            TokenVerificacionEmail = GenerarCodigo(),
+            FechaExpiracionTokenVerificacion = DateTime.UtcNow.AddMinutes(15),
             ProveedorAuth = ProveedorAuth.Local,
             Rol = Rol.Comprador,
             FechaRegistro = DateTime.UtcNow
@@ -62,9 +64,18 @@ public class Usuario
     {
         EmailVerificado = true;
         TokenVerificacionEmail = null;
+        FechaExpiracionTokenVerificacion = null;
+    }
+
+    public void RegenerarCodigoVerificacion()
+    {
+        TokenVerificacionEmail = GenerarCodigo();
+        FechaExpiracionTokenVerificacion = DateTime.UtcNow.AddMinutes(15);
     }
 
     public void AsignarRolVendedor() => Rol = Rol.Vendedor;
 
     public void ActualizarPasswordHash(string nuevoHash) => PasswordHash = nuevoHash;
+
+    private static string GenerarCodigo() => Random.Shared.Next(100000, 999999).ToString();
 }

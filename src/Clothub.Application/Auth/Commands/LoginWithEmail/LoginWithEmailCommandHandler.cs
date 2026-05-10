@@ -25,6 +25,9 @@ public class LoginWithEmailCommandHandler : IRequestHandler<LoginWithEmailComman
         if (!BCrypt.Net.BCrypt.Verify(request.Password, usuario.PasswordHash))
             throw new InvalidOperationException("Credenciales inválidas.");
 
+        if (!usuario.EmailVerificado)
+            throw new InvalidOperationException("Debés verificar tu email antes de iniciar sesión.");
+
         return _jwtService.GenerarToken(usuario);
     }
 }

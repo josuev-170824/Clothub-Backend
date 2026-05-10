@@ -3,9 +3,12 @@ using System.Text.Json;
 using Clothub.Application.Auth.Commands.GoogleAuth;
 using Clothub.Application.Auth.Commands.LoginWithEmail;
 using Clothub.Application.Auth.Commands.RegisterWithEmail;
+using Clothub.Application.Auth.Commands.ReenviarCodigoVerificacion;
+using Clothub.Application.Auth.Commands.VerificarEmail;
 using Clothub.Application.Auth.Interfaces;
 using Clothub.Application.Auth.Services;
 using Clothub.API.Auth;
+using Clothub.API.Services;
 using Clothub.Persistence;
 using Clothub.Persistence.Repositories;
 using MediatR;
@@ -14,6 +17,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,15 @@ builder.Services.AddDbContext<ClothubDbContext>(options =>
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterWithEmailCommand).Assembly));
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(o =>
+{
+    o.ApiToken = builder.Configuration["Resend:ApiKey"]!;
+});
+builder.Services.AddTransient<IResend, ResendClient>();
+builder.Services.AddScoped<IEmailService, ResendEmailService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -112,6 +125,33 @@ app.MapPost("/auth/login", async (LoginRequest request, IMediator mediator) =>
         var command = new LoginWithEmailCommand(request.Email, request.Password);
         var result = await mediator.Send(command);
         return Results.Ok(new { token = result });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
+});
+
+app.MapPost("/auth/verificar-email", async (VerificarEmailRequest request, IMediator mediator) =>
+{
+    try
+    {
+        var command = new VerificarEmailCommand(request.Email, request.Codigo);
+        var token = await mediator.Send(command);
+        return Results.Ok(new { token });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
+});
+
+app.MapPost("/auth/reenviar-codigo", async (ReenviarCodigoRequest request, IMediator mediator) =>
+{
+    try
+    {
+        await mediator.Send(new ReenviarCodigoVerificacionCommand(request.Email));
+        return Results.Ok(new { message = "Código reenviado correctamente." });
     }
     catch (Exception ex)
     {
