@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Clothub.Application.Auth.Commands.GoogleAuth;
 using Clothub.Application.Auth.Commands.LoginWithEmail;
 using Clothub.Application.Auth.Commands.RegisterWithEmail;
@@ -30,9 +32,24 @@ builder.Services.AddCors(options =>
         var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:5173"];
         policy.WithOrigins(origins)
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+              .WithMethods("GET", "POST", "PUT", "DELETE")
+              .WithHeaders("Content-Type", "Authorization");
     });
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("auth", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
 builder.Services.AddDbContext<ClothubDbContext>(options =>
@@ -102,7 +119,18 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    if (!app.Environment.IsDevelopment())
+        context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+    await next();
+});
 
 app.MapPost("/auth/register", async (RegisterRequest request, IMediator mediator) =>
 {
@@ -116,7 +144,7 @@ app.MapPost("/auth/register", async (RegisterRequest request, IMediator mediator
     {
         return Results.BadRequest(new { message = ex.Message });
     }
-});
+}).RequireRateLimiting("auth");
 
 app.MapPost("/auth/login", async (LoginRequest request, IMediator mediator) =>
 {
@@ -130,7 +158,7 @@ app.MapPost("/auth/login", async (LoginRequest request, IMediator mediator) =>
     {
         return Results.BadRequest(new { message = ex.Message });
     }
-});
+}).RequireRateLimiting("auth");
 
 app.MapPost("/auth/verificar-email", async (VerificarEmailRequest request, IMediator mediator) =>
 {
@@ -144,7 +172,7 @@ app.MapPost("/auth/verificar-email", async (VerificarEmailRequest request, IMedi
     {
         return Results.BadRequest(new { message = ex.Message });
     }
-});
+}).RequireRateLimiting("auth");
 
 app.MapPost("/auth/reenviar-codigo", async (ReenviarCodigoRequest request, IMediator mediator) =>
 {
@@ -157,9 +185,10 @@ app.MapPost("/auth/reenviar-codigo", async (ReenviarCodigoRequest request, IMedi
     {
         return Results.BadRequest(new { message = ex.Message });
     }
-});
+}).RequireRateLimiting("auth");
 
 app.MapGet("/auth/google", () =>
-    Results.Challenge(new AuthenticationProperties(), [GoogleDefaults.AuthenticationScheme]));
+    Results.Challenge(new AuthenticationProperties(), [GoogleDefaults.AuthenticationScheme]))
+    .RequireRateLimiting("auth");
 
 app.Run();

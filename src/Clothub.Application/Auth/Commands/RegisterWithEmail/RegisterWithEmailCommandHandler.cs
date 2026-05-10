@@ -21,7 +21,7 @@ public class RegisterWithEmailCommandHandler : IRequestHandler<RegisterWithEmail
         if (await _usuarioRepository.ExisteEmailAsync(request.Email, cancellationToken))
             throw new InvalidOperationException("El email ya está registrado.");
 
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12);
         var usuario = Usuario.CrearConEmail(request.Nombre, request.Apellidos, request.Email, passwordHash);
 
         await _usuarioRepository.AgregarAsync(usuario, cancellationToken);

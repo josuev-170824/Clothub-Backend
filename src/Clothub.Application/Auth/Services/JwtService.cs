@@ -29,6 +29,8 @@ public class JwtService : IJwtService
         };
 
         var token = new JwtSecurityToken(
+            issuer: "clothub",
+            audience: "clothub-app",
             claims: claims,
             expires: DateTime.UtcNow.AddDays(7),
             signingCredentials: credentials

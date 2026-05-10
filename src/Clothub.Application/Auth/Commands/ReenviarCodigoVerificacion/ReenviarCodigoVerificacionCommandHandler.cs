@@ -19,14 +19,12 @@ public class ReenviarCodigoVerificacionCommandHandler : IRequestHandler<Reenviar
     {
         var usuario = await _usuarioRepository.ObtenerPorEmailAsync(request.Email, cancellationToken);
 
-        if (usuario is null)
-            throw new InvalidOperationException("Usuario no encontrado.");
-
-        if (usuario.EmailVerificado)
-            throw new InvalidOperationException("El email ya fue verificado.");
+        // Respuesta siempre genérica para no revelar si el email existe o no
+        if (usuario is null || usuario.EmailVerificado)
+            return;
 
         if (usuario.FechaExpiracionTokenVerificacion is not null && usuario.FechaExpiracionTokenVerificacion > DateTime.UtcNow.AddMinutes(14))
-            throw new InvalidOperationException("Debés esperar al menos 60 segundos antes de solicitar un nuevo código.");
+            return;
 
         usuario.RegenerarCodigoVerificacion();
         await _usuarioRepository.ActualizarAsync(cancellationToken);
