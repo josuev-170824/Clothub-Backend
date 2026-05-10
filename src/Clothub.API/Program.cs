@@ -67,6 +67,7 @@ builder.Services.Configure<ResendClientOptions>(o =>
 });
 builder.Services.AddTransient<IResend, ResendClient>();
 builder.Services.AddScoped<IEmailService, ResendEmailService>();
+builder.Services.AddHostedService<LimpiezaCuentasZombieService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -99,7 +100,7 @@ builder.Services.AddAuthentication(options =>
         var frontendUrl = ctx.HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Frontend:Url"]!;
 
         ctx.HandleResponse();
-        ctx.Response.Redirect($"{frontendUrl}/auth/callback?token={token}");
+        ctx.Response.Redirect($"{frontendUrl}/auth/callback#token={token}");
     };
 });
 
